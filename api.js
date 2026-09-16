@@ -2,7 +2,7 @@
  * API.JS — จุดเดียวที่คุยกับ Apps Script Backend
  * แก้ APPS_SCRIPT_URL เป็น URL Web App ที่ Deploy จาก Apps Script ของคุณ
  */
-const APPS_SCRIPT_URL = 'PUT_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLQupT_YH18immkN7AE8F1rXG5QBvphnP74ppmgooZ1C8nEp_njmq4vP861Gcrmnjh/exec';
 
 async function callApi(action, payload) {
   const res = await fetch(APPS_SCRIPT_URL, {
