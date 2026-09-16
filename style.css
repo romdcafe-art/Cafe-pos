@@ -1,0 +1,195 @@
+/* ========================================================
+   COFFEE POS — Theme: Green
+   หลักการ: ปุ่มใหญ่, กดง่าย, ใช้บนแท็บเล็ตหน้าร้าน, โหลดเร็ว
+   ======================================================== */
+
+:root {
+  --green-900: #1F3D2B;   /* หัวข้อ / แถบบน */
+  --green-700: #2F6B45;   /* ปุ่มหลัก / เน้น */
+  --green-500: #4C8C5B;   /* ที่นั่งว่าง (Available) */
+  --green-100: #E4EEE3;   /* พื้นหลังการ์ด / hover */
+  --amber-600: #C97A3D;   /* ที่นั่งไม่ว่าง (Occupied) — สีแยกจากเขียวชัดเจน */
+  --cream:      #F7F6F0;  /* พื้นหลังหน้าจอ */
+  --ink:        #1E2620;  /* ตัวอักษรหลัก */
+  --ink-soft:   #5B6A5E;  /* ตัวอักษรรอง */
+  --line:       #D9E0D6;  /* เส้นขอบ */
+  --white:      #FFFFFF;
+
+  --radius: 14px;
+  --gap: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", Arial, sans-serif;
+  font-size: 17px;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  background: var(--green-900);
+  color: var(--white);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.topbar nav a {
+  color: var(--green-100);
+  text-decoration: none;
+  margin-left: 18px;
+  font-size: 15px;
+}
+.topbar nav a:hover { color: var(--white); }
+
+/* ---------- Layout ---------- */
+.screen {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 15px;
+  color: var(--ink-soft);
+  margin: 22px 0 10px;
+  font-weight: 600;
+}
+
+/* ---------- Floor plan grid (ตามผังที่นั่งที่ลูกค้าวาดไว้) ---------- */
+.floor {
+  display: grid;
+  grid-template-columns: 2fr 0.6fr 1fr;
+  grid-template-areas:
+    ".      b1     b2"
+    "table1 .      b3"
+    "table2 .      b4"
+    ".      .      b5";
+  gap: var(--gap);
+  align-items: stretch;
+}
+.seat-table1 { grid-area: table1; }
+.seat-table2 { grid-area: table2; }
+.seat-b1 { grid-area: b1; }
+.seat-b2 { grid-area: b2; }
+.seat-b3 { grid-area: b3; }
+.seat-b4 { grid-area: b4; }
+.seat-b5 { grid-area: b5; }
+
+.seat-extra-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+
+/* ---------- Seat card ---------- */
+.seat-card {
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: var(--white);
+  padding: 16px;
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  transition: transform 0.08s ease;
+}
+.seat-card:active { transform: scale(0.98); }
+
+.seat-card.available {
+  border-color: var(--green-500);
+  background: var(--green-100);
+}
+.seat-card.occupied {
+  border-color: var(--amber-600);
+  background: #FBF1E7;
+}
+
+.seat-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+.seat-status {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.seat-card.available .seat-status { color: var(--green-700); }
+.seat-card.occupied .seat-status { color: var(--amber-600); font-weight: 600; }
+
+.seat-amount {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ---------- Take Away button ---------- */
+.btn-take-away {
+  width: 100%;
+  margin-top: 24px;
+  padding: 22px;
+  background: var(--green-700);
+  color: var(--white);
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: var(--radius);
+  letter-spacing: 0.3px;
+}
+.btn-take-away:active { background: var(--green-900); }
+
+/* ---------- Generic buttons ---------- */
+.btn-primary {
+  background: var(--green-700);
+  color: var(--white);
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.btn-primary:active { background: var(--green-900); }
+
+.btn-secondary {
+  background: var(--white);
+  border: 2px solid var(--line);
+  color: var(--ink);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+/* ---------- Loading / toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green-900);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  display: none;
+  z-index: 50;
+}
+.toast.show { display: block; }
+.toast.error { background: #8C3B2A; }

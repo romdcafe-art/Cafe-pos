@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Coffee POS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <h1>☕ Coffee POS</h1>
+    <nav>
+      <a href="history.html">Orders</a>
+      <a href="summary.html">Summary</a>
+      <a href="menu-manage.html">Menu</a>
+    </nav>
+  </div>
+
+  <div class="screen">
+    <div class="section-label">Seating</div>
+
+    <div class="floor" id="floor">
+      <!-- Seat cards ถูกวาดโดย pos.js ตามตำแหน่งในผังร้าน -->
+    </div>
+
+    <!-- ที่นั่งเพิ่มเติมในอนาคต (ถ้ามีที่ไม่อยู่ในผังหลัก) จะโผล่ตรงนี้ -->
+    <div class="seat-extra-row" id="seat-extra-row"></div>
+
+    <button class="btn-take-away" id="btn-take-away">+ TAKE AWAY</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/cache.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pos.js"></script>
+</body>
+</html>
