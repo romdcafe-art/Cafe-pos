@@ -10,6 +10,13 @@ let productsCache = [];
 let editingProductId = null; // null = กำลังเพิ่มใหม่, ไม่ null = กำลังแก้ไข
 
 async function initMenuPage() {
+  // แสดงจาก Cache ก่อนทันที (ถ้ามี) เพื่อให้รู้สึกเร็วขึ้น ก่อนดึงข้อมูลสดมาทับ
+  const cached = getCache('bootstrap', CACHE_TTL_MS);
+  if (cached) {
+    productsCache = cached.products;
+    renderProducts();
+  }
+
   await loadProducts();
   document.getElementById('btn-add-menu').addEventListener('click', () => openModal(null));
   document.getElementById('form-product').addEventListener('submit', handleFormSubmit);
@@ -22,6 +29,7 @@ async function initMenuPage() {
 async function loadProducts() {
   try {
     const data = await callApi('getBootstrapData', {});
+    setCache('bootstrap', data); // ให้หน้า POS ก็ได้ประโยชน์จาก Cache ที่สดขึ้นด้วย
     productsCache = data.products;
     renderProducts();
   } catch (err) {
