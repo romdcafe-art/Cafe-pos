@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Menu Management — Coffee POS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <h1>☕ Coffee POS</h1>
+    <nav>
+      <a href="index.html">POS</a>
+      <a href="history.html">Orders</a>
+      <a href="summary.html">Summary</a>
+    </nav>
+  </div>
+
+  <div class="screen">
+    <div class="menu-header-row">
+      <div class="section-label" style="margin:0;">Menu Management</div>
+      <button class="btn-add-menu" id="btn-add-menu">+ Add Menu</button>
+    </div>
+
+    <div id="menu-list"><!-- รายการเมนูจัดกลุ่มตาม Category วาดโดย menu.js --></div>
+  </div>
+
+  <!-- Modal: Add / Edit Menu -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title" id="modal-title">เพิ่มเมนูใหม่</div>
+      <form id="form-product">
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="f-category" list="category-options" placeholder="เช่น Coffee, Tea, Food" required>
+          <datalist id="category-options">
+            <option value="Coffee"><option value="Tea"><option value="Soda">
+            <option value="Smoothies"><option value="Food"><option value="Dessert"><option value="Other">
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>ชื่อเมนู (ภาษาไทย)</label>
+          <input type="text" id="f-thai-name" placeholder="เช่น ลาเต้ร้อน" required>
+        </div>
+        <div class="form-group">
+          <label>ชื่อเมนู (English)</label>
+          <input type="text" id="f-english-name" placeholder="e.g. Hot Latte">
+        </div>
+        <div class="form-group">
+          <label>Variant (ถ้ามี — เช่น Hot / Iced / Frappe)</label>
+          <input type="text" id="f-variant" placeholder="เช่น Hot">
+        </div>
+        <div class="form-group">
+          <label>ราคา (บาท)</label>
+          <input type="number" id="f-price" min="0" step="1" placeholder="เช่น 50" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-modal">ยกเลิก</button>
+          <button type="submit" class="btn-primary" id="btn-save-modal">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="cache.js"></script>
+  <script src="api.js"></script>
+  <script src="menu.js"></script>
+</body>
+</html>
