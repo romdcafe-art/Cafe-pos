@@ -10,10 +10,27 @@ let orderNumber = null;
 let createdAt = null;
 let products = [];
 let currentCategory = null;
-let cart = [];             // [{ Product_ID, Product_Name, Variant, Quantity, Unit_Price, Note }]
+let cart = [];             // [{ Product_ID, Product_Name, Variant, Quantity, Unit_Price, Note, Selected_Options }]
 let discount = 0;
 let selectedPaymentMethod = null;
 let shopSettings = {};
+
+// --- Option picking state (เช่น ชุดอาหารเช้า: เลือกไข่ + เครื่องดื่ม ก่อน Add to Order) ---
+let pendingOptionProduct = null;
+let pendingOptionGroups = [];
+let pendingSelections = {}; // { 'ไข่': 'ต้ม', 'เครื่องดื่ม': 'กาแฟ' }
+
+/** แปลงค่า Options จาก Sheet (JSON string หรือค่าว่าง) เป็น array เสมอ กัน Error ถ้าข้อมูลเพี้ยน */
+function parseOptions(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
 
 function draftKey() {
   return mode === 'seat' ? 'seat_' + seatName : 'takeaway_' + orderNumber;
@@ -67,6 +84,12 @@ async function initOrderPage() {
   });
 
   setupPaymentModalEvents();
+
+  document.getElementById('btn-cancel-options').addEventListener('click', closeOptionsModal);
+  document.getElementById('btn-confirm-options').addEventListener('click', confirmOptionsAndAddToCart);
+  document.getElementById('options-modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'options-modal-overlay') closeOptionsModal();
+  });
 }
 
 async function loadExistingOrder() {
@@ -83,7 +106,8 @@ async function loadExistingOrder() {
         Variant: it.Variant,
         Quantity: Number(it.Quantity),
         Unit_Price: Number(it.Unit_Price),
-        Note: it.Note || ''
+        Note: it.Note || '',
+        Selected_Options: it.Selected_Options || ''
       }));
       document.getElementById('discount-input').value = discount;
     }
@@ -148,7 +172,21 @@ function renderMenuGrid() {
 /* ---------- Cart ---------- */
 
 function addToCart(product) {
-  const existing = cart.find(it => it.Product_ID === product.Product_ID && !it.Note);
+  const groups = parseOptions(product.Options);
+  if (groups.length > 0) {
+    openOptionsModal(product, groups);
+    return;
+  }
+  addItemToCart(product, '');
+}
+
+function addItemToCart(product, selectedOptionsText) {
+  // รวมแถวเดิมได้เฉพาะเมนูเดียวกัน + ตัวเลือกเดียวกัน + ยังไม่มี Note (กันปนกับรายการที่เพิ่ง Note ไว้)
+  const existing = cart.find(it =>
+    it.Product_ID === product.Product_ID &&
+    !it.Note &&
+    (it.Selected_Options || '') === (selectedOptionsText || '')
+  );
   if (existing) {
     existing.Quantity += 1;
   } else {
@@ -158,11 +196,66 @@ function addToCart(product) {
       Variant: product.Variant || '',
       Quantity: 1,
       Unit_Price: Number(product.Price),
-      Note: ''
+      Note: '',
+      Selected_Options: selectedOptionsText || ''
     });
   }
   saveDraft();
   renderCart();
+}
+
+/* ---------- Option picking modal (เช่น ชุดอาหารเช้า) ---------- */
+
+function openOptionsModal(product, groups) {
+  pendingOptionProduct = product;
+  pendingOptionGroups = groups;
+  pendingSelections = {};
+
+  document.getElementById('options-modal-title').textContent = product.Thai_Name || product.English_Name;
+  renderOptionsModalBody();
+  document.getElementById('options-modal-overlay').classList.add('show');
+}
+
+function closeOptionsModal() {
+  document.getElementById('options-modal-overlay').classList.remove('show');
+  pendingOptionProduct = null;
+}
+
+function renderOptionsModalBody() {
+  const body = document.getElementById('options-modal-body');
+  body.innerHTML = '';
+
+  pendingOptionGroups.forEach(group => {
+    const section = document.createElement('div');
+    section.className = 'option-pick-group';
+    section.innerHTML = `<div class="option-pick-group-name">${group.name}</div><div class="option-pick-choices"></div>`;
+    const choicesWrap = section.querySelector('.option-pick-choices');
+
+    (group.choices || []).forEach(choice => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'option-pick-choice' + (pendingSelections[group.name] === choice ? ' selected' : '');
+      chip.textContent = choice;
+      chip.addEventListener('click', () => {
+        pendingSelections[group.name] = choice;
+        renderOptionsModalBody();
+      });
+      choicesWrap.appendChild(chip);
+    });
+
+    body.appendChild(section);
+  });
+
+  const allSelected = pendingOptionGroups.every(g => pendingSelections[g.name]);
+  document.getElementById('btn-confirm-options').disabled = !allSelected;
+}
+
+function confirmOptionsAndAddToCart() {
+  const text = pendingOptionGroups
+    .map(g => g.name + ': ' + pendingSelections[g.name])
+    .join(', ');
+  addItemToCart(pendingOptionProduct, text);
+  closeOptionsModal();
 }
 
 function changeQuantity(index, delta) {
@@ -197,6 +290,7 @@ function renderCart() {
     line.innerHTML = `
       <div class="order-line-info">
         <div class="order-line-name">${item.Product_Name} ×${item.Quantity}</div>
+        ${item.Selected_Options ? `<div class="product-sub">${item.Selected_Options}</div>` : ''}
         <input type="text" class="order-line-note-input" placeholder="Note (ถ้ามี)" value="${item.Note || ''}">
       </div>
       <div class="qty-stepper">
@@ -361,6 +455,7 @@ function renderReceipt(paymentResult) {
 
   let itemsHtml = cart.map(it => `
     <div class="receipt-line"><span>${it.Product_Name} x${it.Quantity}</span><span>฿${(it.Unit_Price * it.Quantity).toFixed(0)}</span></div>
+    ${it.Selected_Options ? `<div style="font-size:11px;color:#555;">${it.Selected_Options}</div>` : ''}
     ${it.Note ? `<div style="font-size:11px;color:#555;">- ${it.Note}</div>` : ''}
   `).join('');
 

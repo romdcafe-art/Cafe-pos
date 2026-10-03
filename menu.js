@@ -8,6 +8,7 @@ const CATEGORY_ORDER = ['Coffee', 'Tea', 'Soda', 'Smoothies', 'Food', 'Dessert',
 
 let productsCache = [];
 let editingProductId = null; // null = กำลังเพิ่มใหม่, ไม่ null = กำลังแก้ไข
+let optionGroups = [];       // [{ name: 'ไข่', choices: ['ดาว','ต้ม','เจียว'] }, ...] — สำหรับเมนูที่ต้องเลือกก่อนสั่ง เช่น ชุดอาหารเช้า
 
 async function initMenuPage() {
   // แสดงจาก Cache ก่อนทันที (ถ้ามี) เพื่อให้รู้สึกเร็วขึ้น ก่อนดึงข้อมูลสดมาทับ
@@ -23,6 +24,10 @@ async function initMenuPage() {
   document.getElementById('btn-cancel-modal').addEventListener('click', closeModal);
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'modal-overlay') closeModal();
+  });
+  document.getElementById('btn-add-option-group').addEventListener('click', () => {
+    optionGroups.push({ name: '', choices: [] });
+    renderOptionGroups();
   });
 }
 
@@ -83,9 +88,11 @@ function buildProductRow(p) {
 
   row.className = 'product-row' + (!isActive ? ' inactive' : '') + (isSoldOut ? ' sold-out' : '');
 
+  const hasOptions = parseOptions(p.Options).length > 0;
+
   row.innerHTML = `
     <div class="product-info">
-      <div class="product-name">${p.Thai_Name || p.English_Name}${p.Variant ? ' — ' + p.Variant : ''}</div>
+      <div class="product-name">${p.Thai_Name || p.English_Name}${p.Variant ? ' — ' + p.Variant : ''}${hasOptions ? ' <span class="options-badge">มีตัวเลือก</span>' : ''}</div>
       <div class="product-sub">${p.English_Name || ''}</div>
     </div>
     <div class="product-price">฿${Number(p.Price).toFixed(0)}</div>
@@ -131,6 +138,48 @@ async function handleToggleActive(p) {
   }
 }
 
+/* ---------- Option Groups (เช่น ชุดอาหารเช้า: เลือกไข่ + เลือกเครื่องดื่ม) ---------- */
+
+/** แปลงค่าจาก Sheet (JSON string หรือค่าว่าง) เป็น array เสมอ กัน Error ถ้าข้อมูลเพี้ยน */
+function parseOptions(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderOptionGroups() {
+  const container = document.getElementById('option-groups-list');
+  container.innerHTML = '';
+
+  optionGroups.forEach((group, index) => {
+    const row = document.createElement('div');
+    row.className = 'option-group-row';
+    row.innerHTML = `
+      <input type="text" class="og-name" placeholder="ชื่อกลุ่ม เช่น ไข่" value="${group.name || ''}">
+      <input type="text" class="og-choices" placeholder="ตัวเลือก คั่นด้วยคอมม่า เช่น ดาว, ต้ม, เจียว" value="${(group.choices || []).join(', ')}">
+      <button type="button" class="og-remove">✕</button>
+    `;
+    row.querySelector('.og-name').addEventListener('input', (e) => { optionGroups[index].name = e.target.value; });
+    row.querySelector('.og-choices').addEventListener('input', (e) => {
+      optionGroups[index].choices = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+    });
+    row.querySelector('.og-remove').addEventListener('click', () => {
+      optionGroups.splice(index, 1);
+      renderOptionGroups();
+    });
+    container.appendChild(row);
+  });
+
+  if (optionGroups.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:12px 0;">ไม่มีตัวเลือก (ถ้าเมนูนี้ต้องให้ลูกค้าเลือก เช่น ไข่/เครื่องดื่ม ค่อยกด + Add Option Group)</div>';
+  }
+}
+
 /* ---------- Modal: Add / Edit ---------- */
 
 function openModal(product) {
@@ -142,6 +191,9 @@ function openModal(product) {
   document.getElementById('f-english-name').value = product ? product.English_Name : '';
   document.getElementById('f-variant').value = product ? product.Variant : '';
   document.getElementById('f-price').value = product ? product.Price : '';
+
+  optionGroups = product ? parseOptions(product.Options) : [];
+  renderOptionGroups();
 
   document.getElementById('modal-overlay').classList.add('show');
 }
@@ -156,12 +208,16 @@ async function handleFormSubmit(e) {
   const submitBtn = document.getElementById('btn-save-modal');
   submitBtn.disabled = true; // กันกดซ้ำ
 
+  // ตัดกลุ่มที่ยังไม่ได้กรอกชื่อ หรือยังไม่มีตัวเลือกเลยทิ้ง กันข้อมูลเพี้ยน
+  const cleanOptionGroups = optionGroups.filter(g => g.name && g.choices && g.choices.length > 0);
+
   const payload = {
     Category: document.getElementById('f-category').value.trim(),
     Thai_Name: document.getElementById('f-thai-name').value.trim(),
     English_Name: document.getElementById('f-english-name').value.trim(),
     Variant: document.getElementById('f-variant').value.trim(),
-    Price: Number(document.getElementById('f-price').value)
+    Price: Number(document.getElementById('f-price').value),
+    Options: cleanOptionGroups.length > 0 ? JSON.stringify(cleanOptionGroups) : ''
   };
 
   if (editingProductId) {

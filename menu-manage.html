@@ -55,6 +55,13 @@
           <label>ราคา (บาท)</label>
           <input type="number" id="f-price" min="0" step="1" placeholder="เช่น 50" required>
         </div>
+
+        <div class="form-group">
+          <label>Option Groups (ถ้าเมนูนี้ต้องให้ลูกค้าเลือกก่อนสั่ง เช่น ชุดอาหารเช้าต้องเลือกไข่ + เครื่องดื่ม)</label>
+          <div id="option-groups-list"></div>
+          <button type="button" class="btn-secondary" id="btn-add-option-group" style="width:100%; margin-top:6px;">+ Add Option Group</button>
+        </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-secondary" id="btn-cancel-modal">ยกเลิก</button>
           <button type="submit" class="btn-primary" id="btn-save-modal">บันทึก</button>

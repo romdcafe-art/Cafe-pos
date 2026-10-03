@@ -89,6 +89,18 @@
     </div>
   </div>
 
+  <!-- Options Modal: ให้เลือกตัวเลือกก่อนเพิ่มลงตะกร้า (เช่น ชุดอาหารเช้า: เลือกไข่ + เครื่องดื่ม) -->
+  <div class="modal-overlay" id="options-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title" id="options-modal-title">เลือกตัวเลือก</div>
+      <div id="options-modal-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="btn-cancel-options">ยกเลิก</button>
+        <button type="button" class="btn-primary" id="btn-confirm-options" disabled>Add to Order</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Printable receipt (ซ่อนอยู่ปกติ แสดงเฉพาะตอนสั่งพิมพ์ — ดู @media print ใน style.css) -->
   <div id="receipt-print-area"></div>
 

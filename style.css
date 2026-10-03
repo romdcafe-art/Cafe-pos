@@ -598,3 +598,75 @@ button {
   padding: 2px;
   margin-bottom: 6px;
 }
+
+/* ========================================================
+   OPTION GROUPS (เช่น ชุดอาหารเช้า: เลือกไข่ + เครื่องดื่ม)
+   ======================================================== */
+
+.options-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Editor ในหน้า Menu Management */
+.option-group-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.option-group-row .og-name {
+  flex: 0 0 110px;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.option-group-row .og-choices {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.option-group-row .og-remove {
+  background: none;
+  color: #8C3B2A;
+  font-size: 18px;
+  padding: 0 6px;
+}
+
+/* Modal ให้ลูกค้า/พนักงานเลือก Options ตอนสั่ง (Order Screen) */
+.option-pick-group { margin-bottom: 18px; }
+.option-pick-group-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--green-900);
+}
+.option-pick-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.option-pick-choice {
+  background: var(--white);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.option-pick-choice.selected {
+  background: var(--green-700);
+  border-color: var(--green-700);
+  color: var(--white);
+}
